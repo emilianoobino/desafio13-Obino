@@ -1,0 +1,207 @@
+openapi: 3.0.1
+info:
+  title: Documentación de la App Tienda
+  description: E-commerce
+  version: 1.0.0
+servers:
+  - url: http://localhost:8080
+paths:
+  /api/products:
+    get:
+      summary: Obtener todos los productos
+      tags:
+        - Productos
+      parameters:
+        - in: query
+          name: limit
+          schema:
+            type: integer
+          description: Número de productos a devolver
+        - in: query
+          name: page
+          schema:
+            type: integer
+          description: Página actual
+        - in: query
+          name: sort
+          schema:
+            type: string
+          description: Ordenar por precio (asc o desc)
+        - in: query
+          name: query
+          schema:
+            type: string
+          description: Filtro por categoría
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  docs:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/Product'
+                  totalPages:
+                    type: number
+                  prevPage:
+                    type: number
+                  nextPage:
+                    type: number
+                  page:
+                    type: number
+                  hasPrevPage:
+                    type: boolean
+                  hasNextPage:
+                    type: boolean
+                  prevLink:
+                    type: string
+                  nextLink:
+                    type: string
+    post:
+      summary: Agregar un nuevo producto
+      tags:
+        - Productos
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Product'
+      responses:
+        '200':
+          description: Producto creado exitosamente
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Product'
+        '500':
+          description: Error al crear el producto
+  /api/products/{pid}:
+    get:
+      summary: Obtener un producto por su ID
+      tags:
+        - Productos
+      parameters:
+        - in: path
+          name: pid
+          required: true
+          schema:
+            type: string
+          description: ID del producto
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Product'
+        '404':
+          description: Producto no encontrado
+    put:
+      summary: Actualizar un producto por su ID
+      tags:
+        - Productos
+      parameters:
+        - in: path
+          name: pid
+          required: true
+          schema:
+            type: string
+          description: ID del producto
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Product'
+      responses:
+        '200':
+          description: Producto actualizado exitosamente
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Product'
+        '500':
+          description: Error al actualizar el producto
+    delete:
+      summary: Eliminar un producto por su ID
+      tags:
+        - Productos
+      parameters:
+        - in: path
+          name: pid
+          required: true
+          schema:
+            type: string
+          description: ID del producto
+      responses:
+        '200':
+          description: Producto eliminado exitosamente
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Product'
+        '500':
+          description: Error al eliminar el producto
+components:
+  schemas:
+    Product:
+      type: object
+      required:
+        - title
+        - description
+        - price
+        - code
+        - stock
+        - category
+      properties:
+        _id:
+          type: string
+          description: ID del producto
+        title:
+          type: string
+          description: Título del producto
+        description:
+          type: string
+          description: Descripción del producto
+        price:
+          type: number
+          description: Precio del producto
+        img:
+          type: string
+          description: Imagen del producto
+        code:
+          type: string
+          description: Código único del producto
+        stock:
+          type: number
+          description: Stock del producto
+        category:
+          type: string
+          description: Categoría del producto
+        status:
+          type: boolean
+          description: Estado del producto
+        thumbnails:
+          type: array
+          items:
+            type: string
+          description: Miniaturas del producto
+        owner:
+          type: string
+          description: Propietario del producto
+      example:
+        _id: "60c72b2f4f1a062c8c9d1b3f"
+        title: "Producto de ejemplo"
+        description: "Descripción del producto de ejemplo"
+        price: 100
+        img: "https://example.com/img.jpg"
+        code: "PROD123"
+        stock: 50
+        category: "Categoría de ejemplo"
+        status: true
+        thumbnails: ["https://example.com/thumb1.jpg", "https://example.com/thumb2.jpg"]
+        owner: "Propietario de ejemplo"

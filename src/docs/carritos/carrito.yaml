@@ -1,0 +1,252 @@
+openapi: 3.0.1
+info:
+  title: Documentación de la API del Carrito
+  description: API para gestionar el carrito de compras
+  version: 1.0.0
+servers:
+  - url: http://localhost:8080
+paths:
+  /api/carts:
+    post:
+      summary: Crear un nuevo carrito
+      tags:
+        - Carrito
+      responses:
+        '201':
+          description: Carrito creado exitosamente
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Cart'
+        '500':
+          description: Error al crear el carrito
+  /api/carts/{cid}:
+    get:
+      summary: Obtener productos de un carrito por su ID
+      tags:
+        - Carrito
+      parameters:
+        - in: path
+          name: cid
+          required: true
+          schema:
+            type: string
+          description: ID del carrito
+      responses:
+        '200':
+          description: Productos del carrito obtenidos exitosamente
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Cart'
+        '404':
+          description: Carrito no encontrado
+        '500':
+          description: Error al obtener los productos del carrito
+    put:
+      summary: Actualizar los productos de un carrito por su ID
+      tags:
+        - Carrito
+      parameters:
+        - in: path
+          name: cid
+          required: true
+          schema:
+            type: string
+          description: ID del carrito
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: array
+              items:
+                $ref: '#/components/schemas/CartProduct'
+      responses:
+        '200':
+          description: Productos del carrito actualizados exitosamente
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Cart'
+        '404':
+          description: Carrito no encontrado
+        '500':
+          description: Error al actualizar los productos del carrito
+    delete:
+      summary: Vaciar un carrito por su ID
+      tags:
+        - Carrito
+      parameters:
+        - in: path
+          name: cid
+          required: true
+          schema:
+            type: string
+          description: ID del carrito
+      responses:
+        '200':
+          description: Carrito vaciado exitosamente
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Cart'
+        '404':
+          description: Carrito no encontrado
+        '500':
+          description: Error al vaciar el carrito
+  /api/carts/{cid}/product/{pid}:
+    post:
+      summary: Agregar un producto al carrito
+      tags:
+        - Carrito
+      parameters:
+        - in: path
+          name: cid
+          required: true
+          schema:
+            type: string
+          description: ID del carrito
+        - in: path
+          name: pid
+          required: true
+          schema:
+            type: string
+          description: ID del producto
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                quantity:
+                  type: integer
+                  default: 1
+      responses:
+        '200':
+          description: Producto agregado al carrito exitosamente
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Cart'
+        '404':
+          description: Carrito o producto no encontrado
+        '500':
+          description: Error al agregar el producto al carrito
+    put:
+      summary: Actualizar la cantidad de un producto en el carrito
+      tags:
+        - Carrito
+      parameters:
+        - in: path
+          name: cid
+          required: true
+          schema:
+            type: string
+          description: ID del carrito
+        - in: path
+          name: pid
+          required: true
+          schema:
+            type: string
+          description: ID del producto
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                quantity:
+                  type: integer
+      responses:
+        '200':
+          description: Cantidad del producto actualizada exitosamente
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Cart'
+        '404':
+          description: Carrito o producto no encontrado
+        '500':
+          description: Error al actualizar la cantidad del producto
+    delete:
+      summary: Eliminar un producto del carrito
+      tags:
+        - Carrito
+      parameters:
+        - in: path
+          name: cid
+          required: true
+          schema:
+            type: string
+          description: ID del carrito
+        - in: path
+          name: pid
+          required: true
+          schema:
+            type: string
+          description: ID del producto
+      responses:
+        '200':
+          description: Producto eliminado del carrito exitosamente
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Cart'
+        '404':
+          description: Carrito o producto no encontrado
+        '500':
+          description: Error al eliminar el producto del carrito
+  /api/carts/{cid}/purchase:
+    post:
+      summary: Finalizar compra
+      tags:
+        - Carrito
+      parameters:
+        - in: path
+          name: cid
+          required: true
+          schema:
+            type: string
+          description: ID del carrito
+      responses:
+        '200':
+          description: Compra finalizada exitosamente
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  productosNoDisponibles:
+                    type: array
+                    items:
+                      type: string
+                  ticketId:
+                    type: string
+        '404':
+          description: Carrito no encontrado
+        '500':
+          description: Error al finalizar la compra
+components:
+  schemas:
+    Cart:
+      type: object
+      properties:
+        _id:
+          type: string
+          description: ID del carrito
+        products:
+          type: array
+          items:
+            $ref: '#/components/schemas/CartProduct'
+    CartProduct:
+      type: object
+      properties:
+        product:
+          type: string
+          description: ID del producto
+        quantity:
+          type: integer
+          description: Cantidad del producto
