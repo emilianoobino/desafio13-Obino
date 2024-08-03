@@ -1,77 +1,66 @@
-import { expect } from 'chai';
-import supertest from 'supertest';
+import supertest from "supertest";
+import { expect } from "chai";
+import cartModel from "../src/models/cart.model.js";
+import productModel from "../src/models/product.model.js";
 
-//const expect = chai.expect;
-const requester = supertest('http://localhost:9090')
+const requester = supertest("http://localhost:3000");
 
+describe("Testing de App e-Commerce", () => {
 
-describe("Test Products", () => {
+    let productId;
 
-    describe("Testing Api Products", ()=> {
+    before(async function () {
+        await productModel.deleteMany({});
+        await cartModel.deleteMany({});
+    });
 
-        //Test 1: crear un nuevo producto
-        it("Crear Producto: El API POST /api/products debe crear un nuevo producto correctamente", async () => {
-            //Given
+    describe("Test modulo Products", () => {
+
+        it("El endpoint POST /api/products crea un producto correctamente", async () => {
+            // Crea un producto
             const productMock = {
-                owner: "admin",
-                title: "Vestido negro Guess",
-                description: "Vestido con cuello cruzado y con tela brillante",
-                code: "VNB_G_02",
-                price: 900,
-                stock: 2,
-                category: "vestido",
-                thumbnail: ""
-            }
+                title: "Papas Fritas",
+                description: "Papas fritas Lays x 150 grs.",
+                code: 54874,
+                price: 1500,
+                status: true,
+                stock: 25,
+                category: "Snack",
+                owner: "emi@gmail.com",
+                thumbnails: [],
+            };
 
+            const result = await requester.post("/api/products/testing").send(productMock);
             
+            // Almacenar el _id del producto creado
+            productId = result.body.result._id;
             
+            // Verifica que la creación del producto fue exitosa
+            expect(result.status).to.equal(200);
+            expect(result.body.status).to.equal("success");
+            expect(result.body.result).to.have.property("_id");
+        });
 
-            //Then
-            const result = await requester.post("/api/products")
-                //.set('Cookie', [`session=${encodeURIComponent(JSON.stringify(sessionData))}`])  
-                .field('title', productMock.title)
-                .field('description', productMock.description)
-                .field('code', productMock.code)
-                .field('price', productMock.price)
-                .field('stock', productMock.stock)
-                .field('category', productMock.category)
-                .attach('files', './test/files/vestidoNegro-G.jpeg')
-                .field('owner', productMock.owner);
+        it("El endpoint GET /api/products devuelve array de productos", async () => {
+            const result = await requester.get("/api/products/");
+            
+            // Se verifica que devuelva status 200 y un array
+            expect(result.status).to.equal(200);
+            expect(result.body.status).to.equal("success");
+            expect(result.body.products.docs).to.be.an("array");
+        });
 
-            //Assert
-            expect(result.statusCode).to.eql(201);
-        })
+        it("El endpoint GET /api/products/:pid devuelve objeto de producto", async () => {
+            // productId se inicializa cuando se crea el producto en el test anterior
+            const result = await requester.get(`/api/products/${productId}`);
+            
+            // Se verifica que devuelva status 200 y un objeto
+            expect(result.status).to.equal(200);
+            expect(result.body.status).to.equal("success");
+            expect(result.body.product).to.be.an("object");
+        });
+    });
+});
 
-        //test 2
-        it("Creamos producto sin algun parámetro: El API POST /api/products debe retornar un estado HTTP de 400", async () => {
-            //Given
-            const productMock = {
-                owner: "admin",
-                title: "Vestido negro Guess",
-                description: "Vestido con cuello cruzado y con tela brillante",
-                code: "VNB_G_02",
-                price: 900,
-                stock: 2
-            }
 
-            // Then
-            const result = await requester.post("/api/products")
-                  
-                .field('title', productMock.title)
-                .field('description', productMock.description)
-                .field('code', productMock.code)
-                .field('price', productMock.price)
-                .field('stock', productMock.stock)
-                .attach('files', './test/files/vestidoNegro-G.jpeg')
-                .field('owner', productMock.owner);
-
-            //Assert
-            expect(result.statusCode).is.eql(400)
-            expect(result.body).to.have.property('status', 'error');
-            expect(result. body).to.have.property('msg', '¡Oh oh! No se han completado todos los campos requeridos.');
-        })
-
-    })
-
-})
 

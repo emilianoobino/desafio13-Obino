@@ -1,34 +1,44 @@
-import chai from 'chai';
-import supertest from 'supertest';
+import supertest from "supertest";
+import { expect } from "chai";
 
-const expect = chai.expect;
-const requester = supertest('http://localhost:9090')
+const requester = supertest("http://localhost:3000");
 
-describe("Test Carts", () => { 
-    describe("Testing Carts Api", () => {
+describe("Test modulo Carts", () => {  
+        
+    let cartId; // Variable para almacenar el _id del carrito
+    let productId = "id_del_producto"; // Asegúrate de definir esto con un valor válido para los tests
 
-        //Test 1
-        it("Crear Carrito: El API POST /api/carts debe crear un nuevo carrito correctamente", async () => {
-            // Given
-            const cartMock = {
-                id: 1234,
-                products: [
-                    {
-                        "product": "65ed5a133a890cee080fc502",
-                        "quantity": 3,
-                        "_id": "65f881834e66b126e9887c77"
-                    }
-                ]
-            }
+    //1.- Creamos un carrito
+    it("El endpoint POST /api/carts/ crea un Cart", async () => {
+        const result = await requester.post("/api/carts/");
+        
+        expect(result.statusCode).to.be.equal(200);
+        expect(result.body.cart).to.haveOwnProperty("_id");
+        // Almacenar el _id del carrito creado
+        cartId = result.body.cart._id;
+    });
 
-            // Then
-            const { body, statusCode } = await requester.post("/api/carts").send(cartMock)
-            // console.log(result);
+    //2.- Agregamos un Producto al carrito
+    it("El endpoint POST /api/carts/:cartId/product/:productId agrega un producto al carrito", async () => {
+        // Se verifica que cartId esté definido antes de usarlo
+        expect(cartId).to.not.be.undefined;
 
-            // Assert
-            expect(statusCode).to.eql(201)
-            expect(body).to.have.property('message').that.includes('Se ha creado un nuevo carrito con id');
-            
-        })
-    })
-})
+        const bodyCart = {
+            quantity: 2
+        };
+       
+        const result = await requester.post(`/api/carts/${cartId}/product/${productId}`).send(bodyCart);
+        
+        expect(result.statusCode).to.be.equal(200);
+        expect(result.body.status).to.be.equal("success");
+    });
+
+    //3.- Obtenemos todos los carritos
+    it("El endpoint GET /api/carts/ obtiene todos los carritos", async () => {
+        const result = await requester.get("/api/carts/");
+        
+        expect(result.statusCode).to.be.equal(200);
+        expect(result.body.carts).to.be.an('array');
+    });
+});
+
